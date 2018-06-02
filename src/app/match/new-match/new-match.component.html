@@ -1,0 +1,45 @@
+<div class="card">
+    <div class="card-header">
+        Start new match
+    </div>
+    <div class="card-body">
+        <div class="row" >
+            <div class="col text-center">
+                <button type="button" class="btn btn-secondary w-75" >{{teamA ? teamA.shortName : 'Select teams'}}</button>
+            </div>
+            <div class="col text-center">
+                <button type="button" class="btn btn-secondary w-75" >{{teamB ? teamB.shortName : teamA ? 'Select another team' : 'Select teams'}}</button>
+            </div>    
+        </div>
+        <p></p>
+        <div class="row">
+            <!-- <div class="col-2"></div> -->
+            <div class="col-4 text-center" >
+                <div class="btn btn-primary w-100" (click)="submit(false)">Create Match</div>
+            </div>
+            <div class="col-4 text-center" >
+                <div class="btn btn-success w-100" (click)="submit(true)">Create & Start</div>
+            </div>
+            <div class="col-4 text-center" >
+                <div class="btn btn-warning w-75" routerLink="/home" (click)="cancel()">Cancel</div>
+            </div>
+            <!-- <div class="col-2"></div> -->
+            <!-- <div class="col-6"></div> -->
+        </div>
+        <!-- Button trigger modal -->
+    </div>
+    <div class="card-footer">
+        <ul class="list-group">
+            <li class="list-group-item" *ngFor="let team of teams; let i=index;">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">
+                            <input type="checkbox" [(ngModel)]="cbValue[i]" (change)="teamListSelectionChange($event)" aria-label="Checkbox for following text input">
+                        </div>
+                    </div>
+                    <label class="form-control" aria-label="Text input with checkbox">{{team.shortName}}      |   {{    team.fullName}}</label>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
