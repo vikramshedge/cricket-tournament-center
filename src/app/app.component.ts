@@ -9,7 +9,6 @@ import { TotalScore } from './score/total_score/total-score';
 import { MockScoreService } from './mock-services/mock-score.service';
 
 import { Observable } from 'rxjs';
-import { Match } from './mock-services/match.model';
 
 interface MatchIF {
   id: number,
@@ -30,20 +29,42 @@ export class AppComponent {
   teamA: Team; teamB: Team;
   score: TotalScore;
   match: MatchDetails;
-  // matches: MatchDetails[] = [];
+  matches: MatchDetails[] = [];
 
   matchCollection: AngularFirestoreCollection<MatchIF>;
-  fireMatches: Observable<Match[]>;
-  matches: Match[]
+  fireMatches: Observable<MatchIF[]>;
+  fireSnapShot: Observable<any[]>;
 
   constructor(private _matchService: MockMatchService, private afs: AngularFirestore){}
 
   ngOnInit(): void {
-    /*
-    this._matchService.getMatches().subscribe( data => {
-      this.matches = data;
+    // this._matchService.createMockMatches();
+
+    this.matchCollection = this.afs.collection('matches');
+    this.fireMatches = this.matchCollection.valueChanges();
+    // let fireSnapShot = this.matchCollection.ref.doc('InvGNtiBsuj10kLHXlsG').id ;//.snapshotChanges();
+    // console.log("fireSnapShot:");console.log(fireSnapShot);
+    let tempInstance = this;
+    this.matchCollection.ref.get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+            // doc.data() is never undefined for query doc snapshots
+            // console.log(doc.id);//, " => ", doc.data());
+            if (Number(doc.id) > 4){
+              console.log("Dalete this");
+              tempInstance.matchCollection.ref.doc(doc.id).delete().then(function(){
+                console.log("deleted");
+              },
+              function(err){
+                console.log("not deleted");
+              });
+            }
+        });
     });
-    */
+
+    // this.afs.doc<MatchIF>('matches/M2TUfd0cyfkDjnYoT8i8') //z0sXDIYQi3SpP1B5Evui
+
+    console.log("Fire matches:");
+    console.log(this.fireMatches);
   }
   
 }

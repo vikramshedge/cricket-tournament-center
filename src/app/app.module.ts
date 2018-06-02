@@ -32,12 +32,10 @@ import { NewMatchComponent } from "./match/new-match/new-match.component";
 import {MockScoreService} from "./mock-services/mock-score.service";
 import {MockMatchService} from "./mock-services/mock-match.service";
 import {MockTeamService} from "./mock-services/mock-team.service";
-import {MockBallService} from "./mock-services/mock-ball.service";
 
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { FullScoreCardComponent } from './score/full-score-card/full-score-card.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +48,6 @@ import { FullScoreCardComponent } from './score/full-score-card/full-score-card.
     EditScoreComponent,
     // TogglerComponent,
     NewMatchComponent,
-    FullScoreCardComponent,
     // NewTeamComponent,
     // ModalViewComponent
   ],
@@ -72,8 +69,7 @@ import { FullScoreCardComponent } from './score/full-score-card/full-score-card.
     // DbService,
     MockScoreService,
     MockMatchService,
-    MockTeamService,
-    MockBallService
+    MockTeamService
   ],
   bootstrap: [AppComponent]
 })
