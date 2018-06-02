@@ -1,29 +1,65 @@
 import { Injectable } from "@angular/core";
+import { AngularFirestoreDocument, AngularFirestoreCollection, AngularFirestore } from "angularfire2/firestore";
+import { Team } from "./team.model";
+import { Observable, BehaviorSubject } from "rxjs";
+import { map } from "rxjs/operators";
 
-import { Team } from "./../team/team";
-import { TotalScore } from "./../score/total_score/total-score";
-import { Result } from "./../services/result";
-import { MatchDetails } from "./../match/match-details";
-
-// import { DbService } from "./db.service";
-import { MockScoreService } from "./mock-score.service";
-import { AngularFirestore, AngularFirestoreCollection } from "angularfire2/firestore";
-
-export interface TeamInterface { id: number, fullname: string, shortname: string, players: any[]}
 @Injectable()
 export class MockTeamService {
 
-    teamCollection: AngularFirestoreCollection<Team>;
 
+    teamCollection: AngularFirestoreCollection<Team>;
+    teams: Observable<Team[]>;
+    teamDoc: AngularFirestoreDocument<Team>;
+    teamsArray: Team[]=[];
+
+    teamSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+    
     constructor(private afs: AngularFirestore){
         this.teamCollection = this.afs.collection('teams');
+
+        let tempInstance = this;
+        this.teams  = this.teamCollection.snapshotChanges().pipe(
+            map(actions => actions.map(a => {
+                const data = a.payload.doc.data() as Team;
+                const id = a.payload.doc.id;
+                return {id, ...data};
+            }))
+        );
+
+        this.teams.subscribe(data=>{
+            tempInstance.teamsArray = data;
+            tempInstance.teamSubject.next(1);
+        });
     }
 
-    getTeam(id: number): Team {
-        let newTeam: Team;
-        this.teamCollection.doc(id.toString()).valueChanges().forEach(data => {
-            newTeam = new Team(id, data[0].fullname, data[0].shortname, data[0].players);
-        });
-        return newTeam;
+    getTeams(){
+        return this.teams;
     }
+
+    getTeam(teamId: string) {
+        // let match: Match;
+        let thisTeamDoc: AngularFirestoreDocument<Team> = this.afs.doc<Team>(`teams/${teamId}`);
+        let team: Observable<Team> = thisTeamDoc.valueChanges();
+        return team;
+    }
+
+    addTeam(team: Team){
+        this.teamCollection.add(team);
+    }
+
+    deleteTeam(team: Team){
+        this.teamDoc = this.afs.doc(`teames/${team.id}`);
+        this.teamDoc.delete();
+    }
+
+    updateTeam(team: Team){
+        this.teamDoc = this.afs.doc(`teames/${team.id}`);
+        this.teamDoc.update(team);
+    }
+
+    getTeamsWithValueChanges(){
+        return this.teamCollection.valueChanges();
+    }
+
 }

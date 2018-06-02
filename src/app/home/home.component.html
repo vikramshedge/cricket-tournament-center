@@ -5,12 +5,13 @@
 <div class="row">
     <div class="col"></div>
     <div class="col">
-        <button type="button" class="btn btn-primary" routerLink="/create_match" routerLinkActive="active">Start New</button>
+        <button type="button" class="btn btn-primary" routerLink="/create_match" routerLinkActive="active">Create New Match</button>
     </div>
     <div class="col">
-        <button type="button" class="btn btn-warning">Refresh</button>
+        <button type="button" class="btn btn-warning" (click)="refresh()">Refresh</button>
     </div>
-    <div class="col"></div>
+    <div class="col">
+    </div>
 </div>
 </div>
 </div>
@@ -29,54 +30,41 @@
         </ul>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="tab-1" role="tabpanel" >
-                <div *ngIf="onGoingMatches && onGoingMatches.length > 0">
+                <div *ngIf="onGoingMatches && onGoingMatches.length > 0; else noContent">
                     <ul class="list-group">
                         <li class="list-group-item" *ngFor="let match of onGoingMatches">
-                             <match-score-card [matchDetails]="match" (click)="scoreCardClicked(match)"></match-score-card>
+                             <match-score-card [match]="match" (click)="scoreCardClicked(match)"></match-score-card>
                         </li>
                     </ul>
                 </div>
-                <div *ngIf="!(onGoingMatches && onGoingMatches.length > 0)">
-                    <div class="card">
-                        <div class="card-body">
-                            No live matches going on
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="tab-pane fade" id="tab-2" role="tabpanel" >
-                <div *ngIf="upComingMatches && upComingMatches.length > 0">
+                <div *ngIf="upComingMatches && upComingMatches.length > 0; else noContent">
                     <div class="list-group">
                         <a href="#" class="list-group-item" *ngFor="let match of upComingMatches">
-                            <match-score-card [matchDetails]="match" (click)="scoreCardClicked(match)"></match-score-card>
+                            <match-score-card [match]="match" (click)="scoreCardClicked(match)"></match-score-card>
                         </a>
-                    </div>
-                </div>
-                <div *ngIf="!(upComingMatches && upComingMatches.length > 0)">
-                    <div class="card">
-                        <div class="card-body">
-                            No upcoming matches
-                        </div>
                     </div>
                 </div>
             </div>
             <div class="tab-pane fade" id="tab-3" role="tabpanel" >
-                <div *ngIf="finishedMatches && finishedMatches.length > 0">
+                <div *ngIf="finishedMatches && finishedMatches.length > 0; else noContent" class="scroll-a">
                     <div class="list-group">
                         <a href="#" class="list-group-item" *ngFor="let match of finishedMatches">
-                            <match-score-card [matchDetails]="match" (click)="scoreCardClicked(match)"></match-score-card>
+                            <match-score-card [match]="match" (click)="scoreCardClicked(match)"></match-score-card>
                         </a>
-                    </div>
-                </div>
-                <div *ngIf="!(finishedMatches && finishedMatches.length > 0)">
-                    <div class="card">
-                        <div class="card-body">
-                            No previous matches
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<ng-template #noContent>
+    <div class="card">
+        <div class="card-body">
+            No matches to display
+        </div>
+    </div>
+</ng-template>
     

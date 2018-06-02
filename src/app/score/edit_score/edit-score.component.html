@@ -2,7 +2,7 @@
     <div class="card-header">
         <div class="row">
             <div class="col-4">
-                <div class="btn btn-primary w-50" >Home</div>
+                <div class="btn btn-primary w-50" routerLink="../../home" >Home</div>
             </div>
             <div class="col-4 text-center">
                 Recording score...
@@ -12,12 +12,12 @@
             </div>
         </div>
     </div>
-    <div class="card-body">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <match-score-card [matchDetails]="matchDetails"></match-score-card>
+    <div class="card-body" *ngIf="currentBallLoaded">
+        <ul class="list-group list-group-flush p-0">
+            <li class="list-group-item" class="border-bottom border-info pb-3">
+                <match-score-card [match]="match"></match-score-card>
             </li>
-            <li class="list-group-item">
+            <li class="list-group-item" >
                 <div class="row">
                     <div class="col">This Overs</div>
                     <div class="col text-center" *ngFor="let ball of thisOverBalls.reverse()" style="padding-left: 0; padding-right: 0;">
@@ -27,23 +27,33 @@
                     </div>
                 </div>
             </li>
-            <li class="list-group-item">
+            <li class="list-group-item p-0">
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush p-0">
+                        <li class="list-group-item">
+                            <div class="row" >
+                                    <div class="col text-center">
+                                        <button type="button" class="btn btn-secondary w-75" (click)="showTeamModalWindowNew()" >{{batsman ? batsman.name : 'Select batsman'}}</button>
+                                    </div>
+                                    <div class="col text-center">
+                                        <button type="button" class="btn btn-secondary w-75" >{{bowler ? bowler.name : 'Select bowler'}}</button>
+                                    </div>    
+                                </div>
+                        </li>
                         <li class="list-group-item">
                             <div class="row">
                                 <div class="col-3 text-center">
                                     <label>Ball type:</label>
                                 </div>
                                 <div class="col-6">
-                                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                        <label class="btn btn-danger">
+                                    <div class="btn-group btn-group-toggle w-100" (click)="ballTypeToggle($event)" data-toggle="buttons">
+                                        <label class="btn btn-danger" val="0">
                                             <input type="radio" name="options" id="option1" autocomplete="off" checked> Wide
                                         </label>
-                                        <label class="btn btn-primary active">
+                                        <label class="btn btn-primary active" val="1">
                                             <input type="radio" name="options" id="option2" autocomplete="off"> Okay
                                         </label>
-                                        <label class="btn btn-danger">
+                                        <label class="btn btn-danger" val="2">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> No
                                         </label>
                                     </div>
@@ -56,55 +66,55 @@
                         <li class="list-group-item">
                             <div class="row">
                                 <div class="col-3 text-center">
-                                    <label>Ball type:</label>
+                                    <label>Runs:</label>
                                 </div>
                                 <div class="col-6">
-                                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                        <label class="btn btn-secondary btn-circle active">
+                                    <div class="btn-group btn-group-toggle w-100" #runToggleEle (click)="runToggle($event)"  data-toggle="buttons">
+                                        <label class="btn btn-secondary btn-circle active" val="0">
                                             <input type="radio" name="options" id="option1" autocomplete="off" checked> 0
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="1">
                                             <input type="radio" name="options" id="option2" autocomplete="off"> 1
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="2">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> 2
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="3">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> 3
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="4">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> 4
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="5">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> 5
                                         </label>
-                                        <label class="btn btn-secondary btn-circle">
+                                        <label class="btn btn-secondary btn-circle" val="6">
                                             <input type="radio" name="options" id="option3" autocomplete="off"> 6
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-3 text-center">
-                                    <Label [ngClass]="currentBall.run.selectedElement.selectClass">{{currentBall.run.selectedElement.runs}}</Label>
+                                    <Label [ngClass]="currentBall.run.selectedElement.selectClass">{{currentBall.run.selectedElement.text}}</Label>
                                 </div>
                             </div>
                         </li>
-                        <li class="list-group-item">
+                        <li class="list-group-item" class="border-bottom border-info py-3">
                             <div class="row">
                                 <div class="col-3 text-center">
-                                    <label>Ball type:</label>
+                                    <label>Wicket:</label>
                                 </div>
                                 <div class="col-6 text-center">
-                                    <div class="btn-group btn-group-toggle w-100" data-toggle="buttons">
-                                        <label class="btn btn-danger">
+                                    <div class="btn-group btn-group-toggle w-100" (click)="wicketToggle($event)" data-toggle="buttons">
+                                        <label class="btn btn-danger" val="0">
                                             <input type="radio" name="options" id="option1" autocomplete="off" checked> Out
                                         </label>
-                                        <label class="btn btn-success active">
+                                        <label class="btn btn-success active" val="1">
                                             <input type="radio" name="options" id="option2" autocomplete="off"> Not Out
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-3 text-center">
-                                    <Label [ngClass]="currentBall.wkt.selectedElement.selectClass">{{currentBall.wkt.selectedElement.wicket}}</Label>
+                                    <Label [ngClass]="currentBall.wkt.selectedElement.selectClass">{{currentBall.wkt.selectedElement.text}}</Label>
                                 </div>
                             </div>
                         </li>
@@ -114,14 +124,14 @@
                                     <div>Preview before Submit</div>
                                 </div>
                                 <div class="col-8">
-                                    <score-board [teamName]="battingTeam.shortName" [totalScore]="previewScore"></score-board>
+                                    <score-board [teamId]="battingTeam.id" [scoreId]="previewScore.id" [isPreview]="true" [previewScore]="previewScore" [battingTeam]="battingTeam"></score-board>
                                 </div>
                             </div>
                         </li>
-                        <li class="list-group-item">
+                        <li class="list-group-item" class="border-bottom border-info py-3">
                             <div class="row">
                                 <div class="col text-center">
-                                    <button type="button" class="btn btn-success">Submit</button>
+                                    <button type="button" class="btn btn-success" (click)="submitCurrentBall()">Submit</button>
                                 </div>
                             </div>
                         </li>

@@ -1,13 +1,26 @@
-<div *ngIf="matchDetails" style="height: 100%;">
+<div *ngIf="match; else noContent" style="height: 100%;">
     <div class="row">
         <div class="col-5">
-            <score-board [teamName]="matchDetails.teamA.shortName" [totalScore]="matchDetails.scoreA" style="height: auto; width: 100%; background-color: red;"></score-board>
+            <score-board [teamId]="match.teamAid" [scoreId]="match.scoreAid" style="height: auto; width: 100%; background-color: red;"></score-board>
         </div>
         <div class="col-2">Vs.</div>
-        <div class="col-5">
-            <score-board [teamName]="matchDetails.teamB.shortName" [totalScore]="matchDetails.scoreB"></score-board>
+        <div class="col-5 text-right">
+            <score-board [teamId]="match.teamBid" [scoreId]="match.scoreBid"></score-board>
         </div>
     </div>
-    <span >{{matchDetails.summary}}</span>
+    <div class="row">
+        <div class="col text-center text-primary">{{match.summary}}</div>
+        <!-- <br>
+        <div class="col text-center text-primary">team ids: {{match.teamAid}} ==== {{ match.teamBid}}</div>
+        <br>
+        <div class="col text-center text-primary">score ids: {{match.scoreAid}} ==== {{ match.scoreBid}}</div> -->
+    </div>
 </div>
+<ng-template #noContent>
+    <div class="row">
+        <div class="col">
+            match card loading
+        </div>
+    </div>
+</ng-template>
     

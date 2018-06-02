@@ -2,6 +2,14 @@
 html {
     font-size: 1rem;
   }
+
+  /* body {
+    background-image: "background.gif";
+  } */
+
+ul {
+    list-style-type: none;
+  }
   
   @media (max-width: 992px) {
     html {

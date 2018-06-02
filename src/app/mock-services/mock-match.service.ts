@@ -1,122 +1,109 @@
 import { Injectable } from "@angular/core";
-
-import { Team } from "./../team/team";
-import { TotalScore } from "./../score/total_score/total-score";
-import { Result } from "./../services/result";
-import { MatchDetails } from "./../match/match-details";
-
-// import { DbService } from "./db.service";
-import { MockTeamService } from "./mock-team.service";
+import { AngularFirestoreDocument, AngularFirestoreCollection, AngularFirestore } from "angularfire2/firestore";
+import { Match } from "./match.model";
+import { Observable, BehaviorSubject } from "rxjs";
+import { map } from "rxjs/operators";
 import { MockScoreService } from "./mock-score.service";
-import { AngularFirestore, AngularFirestoreCollection } from "angularfire2/firestore";
 
-export interface MatchIf { id: number, team_1_id: number, team_2_id: number, score_1_id: number, score_2_id: number, total_over: number, summary: string, time: any, isStarted: boolean, isEnded: boolean}
 @Injectable()
 export class MockMatchService {
 
-    private sampleLiveMatch: MatchDetails;
-    private currentMatches: MatchDetails[] = [];
+    matchCollection: AngularFirestoreCollection<Match>;
+    matches: Observable<Match[]>;
+    matchDoc: AngularFirestoreDocument<Match>;
+    matchesArray: Match[] = [];
 
-    matchCollection: AngularFirestoreCollection<MatchIf>;
-    // scoreCollection: AngularFirestoreCollection<ScoreIf>;
-
-    // constructor(private _dbService: DbService, private _teamService: TeamService, private _scoreService: ScoreService){}
-    constructor(private _teamService:MockTeamService, private _scoreService: MockScoreService, private afs: AngularFirestore){
+    matchSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+    
+    constructor(private afs: AngularFirestore, private _scoreService: MockScoreService){
         this.matchCollection = this.afs.collection('matches');
-    }
-        
-    getSampleMatchDetails(){
-        return "";
-    }
 
-    createMockMatches(): void {
-
-        let matchCollection = this.afs.collection('matches');
-
-        for (var i=0; i<4; i++){
-            let newMatch: MatchIf = {id: i, team_1_id: 0, team_2_id: 1, score_1_id: 0, score_2_id: 1, total_over: 6, summary: "not started", isStarted: false, isEnded: false, time: ""};
-            matchCollection.doc(i.toString()).set(newMatch);
-        }
-        
-
-
-        // let tempInstance = this;
-        // let teamA = new Team();
-        // teamA.fullName = "Royal Challegers Banglore";
-        // teamA.shortName = "RCB";
-        // let teamB = new Team();
-        // teamB.fullName = "Chennai Super Kings";
-        // teamB.shortName = "CSK";
-        
-        // this.currentMatches = [];
-        // for (let i = 0; i < 3; i++){
-        //     this.createNewMatch(teamA, teamB, false).then(matchDetails => {
-        //         console.log("Match created: "+ matchDetails.matchId);
-        //     }).catch(error => {
-        //         console.log("Error in creating match: " + error);
-        //     });
-        // }         
-    }
-
-    createNewMatch(teamA: Team, teamB: Team, matchStarted: boolean): Promise<MatchDetails>{
         let tempInstance = this;
-        let scoreA: TotalScore, scoreB: TotalScore;
+        this.matches = this.matchCollection.snapshotChanges().pipe(
+            map(actions => actions.map(a => {
+                const data = a.payload.doc.data() as Match;
+                const id = a.payload.doc.id;
+                return {id, ...data};
+            }))
+        );
         
-        let promise: Promise<MatchDetails>  = new Promise(function(resolve, reject) {
-            tempInstance._scoreService.createNewScore().then((score: TotalScore) => {
-                scoreA = score;
-                tempInstance._scoreService.createNewScore().then((score: TotalScore)=>{
-                    scoreB = score;
-                    let matchId = tempInstance.currentMatches.length;
-                    let newMatch: MatchDetails = new MatchDetails(matchId,teamA, teamB,scoreA, scoreB, matchStarted, false);
-                    tempInstance.currentMatches[matchId] = newMatch;
-                    return resolve(newMatch);
-                }).catch(error => reject(error));
-            }).catch(error => reject(error));
+        this.matches.subscribe(data => {
+            tempInstance.matchesArray = data;
+            tempInstance.matchSubject.next(1);
+        });
+    }
+
+    getMatches(){
+        return this.matches;
+    }
+
+    getMatch(matchId: string) {
+        // let match: Match;
+        let thisMatchDoc: AngularFirestoreDocument<Match> = this.afs.doc<Match>(`matches/${matchId}`);
+        let match: Observable<Match> = thisMatchDoc.valueChanges();
+        return match;
+    }
+
+    getMatchesWithValueChanges(){
+        return this.matchCollection.valueChanges();
+    }
+
+    addMatch(contestId: string, teamAid: string, teamBid: string, totalOvers: number): Promise<Match> {
+        let scoreAid: string; let scoreBid: string;
+        let tempInstance = this;
+        let match: Match;
+
+        let promise: Promise<Match> = new Promise((resolve, reject)=>{
+            this._scoreService.addScore().then(id => {
+                scoreAid = id;
+                tempInstance._scoreService.addScore().then(id => {
+                    scoreBid = id;
+                    match  = {id: "default", contestId: contestId, isStarted: false, isEnded: false, scoreAid:scoreAid, scoreBid: scoreBid, summary:"", teamAid: teamAid, teamBid: teamBid, balls: [], time: "", isTeamABatFirst: true, totalOvers: totalOvers};
+                    tempInstance.matchCollection.add(match).then(value => {
+                        let docId = value.id;
+                        match.id = docId;
+                        tempInstance.updateMatch(match).then(value => {
+                            return resolve(match); 
+                        },reason => {
+                            return reject(reason);
+                        });
+                    },reason => {
+                        console.log("Create new match error:", reason);
+                        reject(reason);
+                    });
+                }, reason => {
+                    reject(reason);
+                });
+            }, reason => {
+                reject(reason);
+            });
+        });
+
+        return promise;
+               
+        
+    }
+
+    deleteMatch(match: Match){
+        this.matchDoc = this.afs.doc(`matches/${match.id}`);
+        this.matchDoc.delete();
+    }
+
+    updateMatch(match: Match): Promise<boolean> {
+        this.matchDoc = this.afs.doc(`matches/${match.id}`);
+        let tempInstance = this;
+        let promise: Promise<boolean> = new Promise((resolve, reject) => {
+            this.matchDoc.update(match).then(value => {
+                console.log("Match updated:");
+                console.log(value);
+                return resolve(true);
+            }).then(reason => {
+                console.log("Match update rejected");
+                console.log(reason);
+                return reject(reason);
+            });
         });
         return promise;
     }
 
-    getMatch(matchId: number): Promise<MatchDetails> {
-        let tempInstance = this;
-        let promise: Promise<MatchDetails> = new Promise(function(resolve, reject){
-            let match: MatchDetails = tempInstance.currentMatches[matchId];
-            return resolve(match);
-        });
-        return promise;
-    }
-
-    getAllMatches(): MatchDetails[] {
-        let tempInstance = this;
-
-        this.matchCollection.valueChanges().subscribe(data => {
-            // console.log("In get all matches, subscribe:");
-            // console.log(data);
-        });
-        let matches: MatchDetails[] = [];
-
-        this.matchCollection.valueChanges().forEach(data => {
-            console.log("In get all matches, forEach:");
-            console.log(data[0].id);
-            for (var i = 0; i < data.length; i++) {
-                let teamA: Team = this._teamService.getTeam(data[i].team_1_id);
-                let teamB: Team = this._teamService.getTeam(data[i].team_2_id);
-                let scoreA: TotalScore = this._scoreService.getScore(data[i].score_1_id);
-                let scoreB: TotalScore = this._scoreService.getScore(data[i].score_2_id);
-                console.log("teamB.fullName:" + teamB.fullName + ">");
-                let newMatch: MatchDetails = new MatchDetails(data[i].id, teamA, teamB, scoreA, scoreB, data[i].isStarted, data[i].isEnded );
-                matches.push(newMatch);
-            }
-        });
-
-        console.log("returning matches:");
-        console.log(matches.length);
-        return matches;
-
-        // let promise: Promise<MatchDetails[]> = new Promise(function(resolve, reject){
-        //     let matches: MatchDetails[] = tempInstance.currentMatches;
-        //     return resolve(matches);
-        // });
-        // return promise;
-    }
 }

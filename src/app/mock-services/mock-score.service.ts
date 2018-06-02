@@ -1,72 +1,91 @@
 import { Injectable } from "@angular/core";
 
-import { Result } from "./../services/result";
-import { TotalScore } from "./../score/total_score/total-score";
-import { AngularFirestore, AngularFirestoreCollection } from "angularfire2/firestore";
-// import { DbService } from "./db.service";
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from "angularfire2/firestore";
+import { Score } from "./score.model";
+import { Observable, Subject, BehaviorSubject } from "rxjs";
+import { map } from "rxjs/operators";
 
-// import {Observable, Subject} from "rxjs";
 @Injectable()
 export class MockScoreService {
 
-    // private scoreChangedSource = new Subject<TotalScore>();
-    // scoreChanged$ = this.scoreChangedSource.asObservable();
-    private currentScores: TotalScore[] = [];
-    scoreCollection: AngularFirestoreCollection<TotalScore>;
+    scoreCollection: AngularFirestoreCollection<Score>;
+    scores: Observable<Score[]>;
+    scoreDoc: AngularFirestoreDocument<Score>;
+    scoresArray: Score[] = [];
+
+    scoreSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     
     constructor(private afs: AngularFirestore){
+        this.scoreCollection = this.afs.collection('scores');
 
+        let tempInstance = this;
+        this.scores = this.scoreCollection.snapshotChanges().pipe(
+            map(actions => actions.map(a => {
+                const data = a.payload.doc.data() as Score;
+                const id = a.payload.doc.id;
+                return {id, ...data};
+            }))
+        );
+
+        this.scores.subscribe(data=>{
+            tempInstance.scoresArray = data;
+            tempInstance.scoreSubject.next(1);
+        });
     }
 
-    createNewScore(): Promise<TotalScore>{
+    getScores(){
+        return this.scores;
+    }
+
+    getScore(scoreId: string) {
+        // let match: Match;
+        let thisScoreDoc: AngularFirestoreDocument<Score> = this.afs.doc<Score>(`scores/${scoreId}`);
+        let score: Observable<Score> = thisScoreDoc.valueChanges();
+        return score;
+    }
+
+    addScore(): Promise<string> {
         let tempInstance = this;
-        let promise: Promise<TotalScore>  = new Promise(function(resolve, reject) {
-            let newScore: TotalScore = new TotalScore();
-            newScore.id = tempInstance.currentScores.length;
-            tempInstance.currentScores[newScore.id] = newScore;
-            resolve(newScore);
+        let score: Score = {allBallS: [], balls: 0, ballsOfCurrentOver: 0, id: "defaultId", wickets: 0, overs: 0, runs: 0};
+        let promise: Promise<string> = new Promise((resolve, reject)=>{
+            tempInstance.scoreCollection.add(score).then(value => {
+                let docId = value.id;
+                score.id = docId;
+                tempInstance.updateScore(score).then(value=>{
+                    return resolve(docId);
+                },reason => {
+                    return reject(reason);
+                });
+            }, reason => {
+                console.log("create new score error:", reason);
+                return reject(reason);
+            });
+        });
+        return promise;        
+    }
+
+    deleteScore(score: Score){
+        this.scoreDoc = this.afs.doc(`scores/${score.id}`);
+        this.scoreDoc.delete();
+    }
+
+    updateScore(score: Score): Promise<boolean> {
+        this.scoreDoc = this.afs.doc(`scores/${score.id}`);
+        let tempInstance = this;
+        let promise: Promise<boolean> = new Promise((resolve, reject)=>{
+            tempInstance.scoreDoc.update(score).then(value => {
+                console.log("score updated successfully.");
+                return resolve(true);
+            }, reason => {
+                console.log("score update failed:", reason);
+                return reject(false);
+            });
         });
         return promise;
     }
 
-    getScore(scoreId: number): TotalScore {
-        let newScore: TotalScore;
-        this.afs.collection('teams').doc(scoreId.toString()).valueChanges().forEach(data => {
-            newScore = new TotalScore();
-            newScore.id = data[0].id;
-            newScore.allBallS = data[0].allBallS;
-            newScore.runs = data[0].runs;
-            newScore.wickets = data[0].wickets;
-            newScore.balls = data[0].balls;
-            newScore.ballsOfCurrentOver = data[0].ballsOfCurrentOver;
-            newScore.overs = data[0].overs;
-        });
-        return newScore;
-
-        // let tempInstance = this;
-        // let promise: Promise<TotalScore> = new Promise(function(resolve, reject) {
-        //     let newScore = tempInstance.currentScores[scoreId];
-        //     return resolve(newScore);
-        // });
-        // return promise;
+    getScoresWithValueChanges(){
+        return this.scoreCollection.valueChanges();
     }
 
-    updateScore(score: TotalScore): Promise<boolean> {
-        let tempInstance = this;
-        let promise: Promise<boolean> = new Promise(function(resolve, reject){
-            let newScore = tempInstance.currentScores[score.id];
-            newScore.runs = score.runs;
-            newScore.wickets = score.wickets;
-            newScore.balls = score.balls;
-            newScore.ballsOfCurrentOver = score.ballsOfCurrentOver;
-            newScore.overs = score.overs;
-            resolve(true);
-        });
-        return promise;
-    }
-
-    scoreChanged(score: TotalScore){
-        // Notify score card component
-        // this.scoreChangedSource.next(score);
-    }
 }
