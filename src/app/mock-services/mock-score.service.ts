@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from "angularfire2/firestore";
-import { Score } from "./score.model";
+import { Score } from "./../model/score.model";
 import { Observable, Subject, BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 
@@ -46,7 +46,7 @@ export class MockScoreService {
 
     addScore(): Promise<string> {
         let tempInstance = this;
-        let score: Score = {allBallS: [], balls: 0, ballsOfCurrentOver: 0, id: "defaultId", wickets: 0, overs: 0, runs: 0};
+        let score: Score = {allBallS: [], balls: 0, ballsOfCurrentOver: 0, id: "defaultId", wickets: 0, over: 0, runs: 0};
         let promise: Promise<string> = new Promise((resolve, reject)=>{
             tempInstance.scoreCollection.add(score).then(value => {
                 let docId = value.id;

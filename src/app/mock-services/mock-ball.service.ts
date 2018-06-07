@@ -1,12 +1,12 @@
 import { Injectable } from "@angular/core";
 
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from "angularfire2/firestore";
-import { BallModel } from "./ball.model";
-import { Observable } from "rxjs";
+import { BallModel } from "./../model/ball.model";
+import { Observable, BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 import { Ball } from "../score/ball/ball";
-import { Match } from "./match.model";
-import { Player } from "./player.model";
+import { Match } from "./../model/match.model";
+import { Player } from "./../model/player.model";
 
 
 @Injectable()
@@ -16,6 +16,8 @@ export class MockBallService {
     balls: Observable<BallModel[]>;
     ballsDoc: AngularFirestoreDocument<BallModel>;
     ballsArray: BallModel[] = [];
+
+    ballSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     
     constructor(private afs: AngularFirestore){
         this.ballCollection = this.afs.collection('balls');
@@ -29,28 +31,33 @@ export class MockBallService {
             }))
         );
 
-        // this.scores.subscribe(data=>{
-        //     tempInstance.scoresArray = data;
-        // });
+        this.balls.subscribe(data=>{
+            tempInstance.ballsArray = data;
+            tempInstance.ballSubject.next(1);
+        });
     }
 
     getBalls(){
         return this.balls;
     }
 
-    getBall(ballId: string) {
-        // let match: Match;
-        let thisBallDoc: AngularFirestoreDocument<BallModel> = this.afs.doc<BallModel>(`balls/${ballId}`);
-        let ball: Observable<BallModel> = thisBallDoc.valueChanges();
+    getBall(ballId: string): BallModel {
+        let ball: BallModel = new BallModel();
+        for (let i = 0; i < this.ballsArray.length; i++) {
+            if (ballId == this.ballsArray[i].id){
+                ball = this.ballsArray[i];
+            }
+        }
         return ball;
     }
 
-    addBall(ball: Ball, match: Match, batsman: Player, bowler: Player): Promise<string> {
+    addBall(ball: Ball, match: Match, onStrickeBatsman: Player, nonStrickeBatsman: Player, bowler: Player): Promise<string> {
         let tempInstance = this;
         let newBall: BallModel = {
             id: "defaultId", ballType: ball.ballType.selectedElement.value, 
             runs: ball.run.selectedElement.value, wkt: ball.wkt.selectedElement.value,
-            batsmanId: batsman.id, bowlerId: bowler.id, matchId: match.id
+            wktType: ball.wktType.selectedElement.value, onStrickeBatsmanId: onStrickeBatsman.id,
+            nonStrickeBatsmanId: nonStrickeBatsman.id, bowlerId: bowler.id, matchId: match.id
         };
         let promise: Promise<string> = new Promise((resolve, reject)=>{
             this.ballCollection.add(newBall).then(value => {

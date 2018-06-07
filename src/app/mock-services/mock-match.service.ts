@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestoreDocument, AngularFirestoreCollection, AngularFirestore } from "angularfire2/firestore";
-import { Match } from "./match.model";
+import { Match } from "./../model/match.model";
 import { Observable, BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 import { MockScoreService } from "./mock-score.service";

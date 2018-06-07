@@ -9,7 +9,8 @@ import { TotalScore } from './score/total_score/total-score';
 import { MockScoreService } from './mock-services/mock-score.service';
 
 import { Observable } from 'rxjs';
-import { Match } from './mock-services/match.model';
+import { Match } from './model/match.model';
+import { MockBallService } from './mock-services/mock-ball.service';
 
 interface MatchIF {
   id: number,
@@ -36,7 +37,8 @@ export class AppComponent {
   fireMatches: Observable<Match[]>;
   matches: Match[]
 
-  constructor(private _matchService: MockMatchService, private afs: AngularFirestore){}
+  constructor(private _matchService: MockMatchService, private _ballService: MockBallService,
+     private afs: AngularFirestore){}
 
   ngOnInit(): void {
     /*

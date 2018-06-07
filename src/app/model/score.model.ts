@@ -8,6 +8,6 @@ export class Score {
     wickets: number;
     balls: number;
     ballsOfCurrentOver: number;
-    overs: number;
+    over: number;
 
 }

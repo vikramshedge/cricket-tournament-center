@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter, SimpleChanges, OnChanges } from "@angular/core";
-import { Match } from "../../mock-services/match.model";
+import { Match } from "../../model/match.model";
 import { MockMatchService } from "../../mock-services/mock-match.service";
 
 @Component({

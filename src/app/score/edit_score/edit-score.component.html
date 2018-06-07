@@ -31,14 +31,24 @@
                 <div class="card-body">
                     <ul class="list-group list-group-flush p-0">
                         <li class="list-group-item">
-                            <div class="row" >
-                                    <div class="col text-center">
-                                        <button type="button" class="btn btn-secondary w-75" (click)="showTeamModalWindowNew()" >{{batsman ? batsman.name : 'Select batsman'}}</button>
-                                    </div>
-                                    <div class="col text-center">
-                                        <button type="button" class="btn btn-secondary w-75" >{{bowler ? bowler.name : 'Select bowler'}}</button>
-                                    </div>    
+                            <div class="row">
+                                <div class="col text-center">
+                                    <button type="button" class="btn btn-primary w-100" (click)="selectBatsmanOrBowler=0" data-toggle="modal" data-target="#playerSelectModal">{{onStrikeBatsman ? onStrikeBatsman.name : 'Select batsman'}}</button>
                                 </div>
+                                <div class="col"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center">
+                                    <button type="button" class="btn btn-secondary w-100" (click)="selectBatsmanOrBowler=1" data-toggle="modal" data-target="#playerSelectModal">{{nonStrikeBatsman ? nonStrikeBatsman.name : 'Select bowler'}}</button>
+                                </div>
+                                <div class="col"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center">
+                                    <button type="button" class="btn btn-warning w-100" (click)="selectBatsmanOrBowler=2" data-toggle="modal" data-target="#playerSelectModal">{{bowler ? bowler.name : 'Select bowler'}}</button>
+                                </div>
+                                <div class="col"></div>
+                            </div>
                         </li>
                         <li class="list-group-item">
                             <div class="row">
@@ -140,4 +150,26 @@
             </li>
         </ul>
     </div>
+</div>
+
+<div class="modal fade" id="playerSelectModal" tabindex="-1" role="dialog" aria-labelledby="playerSelectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+        <div class="modal-body" style="height: 40em; overflow-y: scroll;">
+            <ul class="list-group">
+                <li class="list-group-item" *ngFor="let player of players; let i=index;">
+                    <div class="input-group">
+                        <button class="form-control btn-default" aria-label="Text input with checkbox" data-dismiss="modal" (click)="selectPlayer(player)">{{i}} || {{player.name}}</button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+  </div>
 </div>

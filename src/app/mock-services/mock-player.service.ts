@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from "angularfire2/firestore";
-import { Player } from "./player.model";
+import { Player } from "./../model/player.model";
 import { Observable, Subject, BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 
@@ -20,7 +20,7 @@ export class MockPlayerService {
 {id:"atoply", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"shobhkum", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"akshsha2", outOrNot: "Not out", ballsFaced: 0, overs: 0},
-{id:"abkurup", outOrNot: "Not out", ballsFaced: 0, overs: 0},
+{id:"abkurup", outOrNot: "Not out", ballsFaced: 0, overs: 0, email: "abkurup@cisco.com"},
 {id:"ashwipra", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"rishiksi", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"sasuryva", outOrNot: "Not out", ballsFaced: 0, overs: 0},
@@ -64,7 +64,6 @@ export class MockPlayerService {
 {id:"sunchava", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"akshsinh", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"nshanku", outOrNot: "Not out", ballsFaced: 0, overs: 0},
-{id:"Abkurup", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"rdawooda", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"Pbhopi", outOrNot: "Not out", ballsFaced: 0, overs: 0},
 {id:"shipawar", outOrNot: "Not out", ballsFaced: 0, overs: 0},

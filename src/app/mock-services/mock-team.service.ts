@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { AngularFirestoreDocument, AngularFirestoreCollection, AngularFirestore } from "angularfire2/firestore";
-import { Team } from "./team.model";
+import { Team } from "./../model/team.model";
 import { Observable, BehaviorSubject } from "rxjs";
 import { map } from "rxjs/operators";
 

@@ -1,4 +1,4 @@
-import { Component, OnInit,OnChanges, SimpleChanges, OnDestroy, ViewChild, ElementRef } from "@angular/core";
+import { Component, OnInit,OnChanges, SimpleChanges, OnDestroy, ViewChild, ElementRef, AfterViewInit } from "@angular/core";
 import { ActivatedRoute } from '@angular/router';
 
 import { Ball } from "./../ball/ball";
@@ -13,13 +13,15 @@ import { TotalScore } from "./../total_score/total-score";
 //mock services
 import { MockMatchService } from "./../../mock-services/mock-match.service";
 import { MockScoreService } from "./../../mock-services/mock-score.service";
-import { Match } from "../../mock-services/match.model";
+import { Match } from "../../model/match.model";
 import { Subscription } from "rxjs";
-import { Score } from "../../mock-services/score.model";
+import { Score } from "../../model/score.model";
 import { MockTeamService } from "../../mock-services/mock-team.service";
-import { Team } from "../../mock-services/team.model";
+import { Team } from "../../model/team.model";
 import { MockBallService } from "../../mock-services/mock-ball.service";
-import { Player } from "../../mock-services/player.model";
+import { Player } from "../../model/player.model";
+import { MockPlayerService } from "../../mock-services/mock-player.service";
+import { BallModel } from "../../model/ball.model";
 
 @Component({
     selector : "edit-score",
@@ -28,7 +30,7 @@ import { Player } from "../../mock-services/player.model";
     inputs:['match']
 })
 
-export class EditScoreComponent implements OnInit, OnDestroy {
+export class EditScoreComponent implements OnInit, OnDestroy, AfterViewInit {
     currentBall: Ball;
     matchId: string;
     // matchDetails: MatchDetails;
@@ -46,16 +48,26 @@ export class EditScoreComponent implements OnInit, OnDestroy {
     matchSubscriptoin: Subscription;
     bannerMatchSubscriptoin: Subscription;
     match: Match = null;
-    batsman: Player = null;
+
+    onStrikeBatsman: Player = null;
+    nonStrikeBatsman: Player = null;
     bowler: Player = null;
+    nonStrickeBatsmanId: string = null;
+    onStrickeBatsmanId: string = null;
+    bowlerId: string = null;
+
+    selectBatsmanOrBowler: number = 0;
     bannerMatch: Match;
+    players: Player[]=[];
+    playerSubscription: Subscription;
 
     thisOverBalls: String[] = [];
 
     @ViewChild("runToggleEle") tref: ElementRef;
 
     constructor(private _matchService: MockMatchService, private _scoreService: MockScoreService, 
-        private _teamService: MockTeamService, private _ballService: MockBallService, private _route: ActivatedRoute){}
+        private _teamService: MockTeamService, private _ballService: MockBallService,
+        private _route: ActivatedRoute, private _playerService: MockPlayerService){}
 
     ngOnInit(){
         console.log("In edit score component");
@@ -73,6 +85,7 @@ export class EditScoreComponent implements OnInit, OnDestroy {
         try{
             this.matchSubscriptoin.unsubscribe();
             this.bannerMatchSubscriptoin.unsubscribe();
+            tempInstance.playerSubscription.unsubscribe();
         }catch(e){
             //do nothing
         }
@@ -92,12 +105,17 @@ export class EditScoreComponent implements OnInit, OnDestroy {
                         tempInstance._scoreService.getScore(data.scoreBid).subscribe(scoreB => {
                             console.log("score B found");
                             tempInstance.scoreB = scoreB;
-                            if (tempInstance.match.balls.length > 0){
-                                tempInstance.currentBall = tempInstance.match.balls[tempInstance.match.balls.length - 1];
+                            if (tempInstance.scoreA.allBallS.length > 0){
+                                let lastBallId = tempInstance.scoreA.allBallS[tempInstance.scoreA.allBallS.length - 1];
+                                let lastBall: BallModel = this._ballService.getBall(lastBallId);
+                                tempInstance.nonStrickeBatsmanId = lastBall.nonStrickeBatsmanId;
+                                tempInstance.onStrickeBatsmanId = lastBall.onStrickeBatsmanId;
+                                tempInstance.bowlerId = lastBall.bowlerId;
+                                tempInstance.getCurrentPlayersFromId();
                             } else {
                                 console.log("Creating new ball");
-                                tempInstance.currentBall = new Ball();
                             }
+                            tempInstance.currentBall = new Ball();
                             tempInstance.currentBallLoaded = true;
                             tempInstance.getCurrentTeam();
                             tempInstance.calculatePreviewScore();
@@ -106,6 +124,15 @@ export class EditScoreComponent implements OnInit, OnDestroy {
                 });
             });
         });
+
+        this.playerSubscription = this._playerService.playerSubject.subscribe(data => {
+            tempInstance.players = tempInstance._playerService.playersArray;
+            tempInstance.getCurrentPlayersFromId();
+        });
+    }
+
+    ngAfterViewInit(){
+
     }
 
     ballTypeToggle(event: any){
@@ -139,7 +166,7 @@ export class EditScoreComponent implements OnInit, OnDestroy {
         score.runs = score.runs + (this.currentBall.ballType.selectedElement.value != 'okay' ? 1 : 0);
         score.balls = score.balls + (this.currentBall.ballType.selectedElement.value === 'okay' ? 1 : 0);
         score.wickets = score.wickets + (this.currentBall.wkt.selectedElement.value === 'out' ? 1 : 0);
-        score.overs = Math.floor(score.balls / 6);
+        score.over = Math.floor(score.balls / 6);
         score.ballsOfCurrentOver = score.balls % 6;
 
         return true;
@@ -149,7 +176,7 @@ export class EditScoreComponent implements OnInit, OnDestroy {
         this.addBall(this.battingScore);
         
         let tempInstance = this;
-        this._ballService.addBall(this.currentBall, this.match, this.batsman, this.bowler).then(data => {
+        this._ballService.addBall(this.currentBall, this.match, this.onStrikeBatsman, this.nonStrikeBatsman, this.bowler).then(data => {
             console.log("Ball added with id: ", data);
             tempInstance.battingScore.allBallS.push(data);            
             tempInstance._scoreService.updateScore(tempInstance.battingScore).then(value => {
@@ -165,7 +192,7 @@ export class EditScoreComponent implements OnInit, OnDestroy {
     }
 
     getCurrentTeam(){
-        if (this.scoreA.overs < this.match.totalOvers) {
+        if (this.scoreA.over < this.match.totalOvers) {
             this.battingTeam =  this.teamA;
             this.battingScore =  this.scoreA;
 
@@ -187,12 +214,46 @@ export class EditScoreComponent implements OnInit, OnDestroy {
         try{
             this.matchSubscriptoin.unsubscribe();
             this.bannerMatchSubscriptoin.unsubscribe();
+            this.playerSubscription.unsubscribe();
         }catch(e){
             //do nothing
         }
     }
 
-    showTeamModalWindowNew(){
-        
+    selectPlayer(player: Player){
+        if (this.selectBatsmanOrBowler == 0) {
+            this.onStrikeBatsman = player;
+        } else if (this.selectBatsmanOrBowler == 1) {
+            this.nonStrikeBatsman = player;
+        } else if (this.selectBatsmanOrBowler == 2) {
+            this.bowler = player;
+        }
     }
+
+    getCurrentPlayersFromId(){
+        if (this.onStrickeBatsmanId){
+            for (let i = 0; i < this.players.length; i++){
+                if (this.onStrickeBatsmanId == this.players[i].id){
+                    this.onStrikeBatsman = this.players[i];
+                }
+            }
+        }
+
+        if (this.nonStrickeBatsmanId){
+            for (let i = 0; i < this.players.length; i++){
+                if (this.nonStrickeBatsmanId == this.players[i].id){
+                    this.nonStrikeBatsman = this.players[i];
+                }
+            }
+        }
+
+        if (this.bowlerId){
+            for (let i = 0; i < this.players.length; i++){
+                if (this.bowlerId == this.players[i].id){
+                    this.bowler = this.players[i];
+                }
+            }
+        }
+    }
+
 }

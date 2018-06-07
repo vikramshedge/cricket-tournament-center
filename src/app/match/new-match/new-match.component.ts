@@ -18,8 +18,8 @@ import { MockScoreService } from "./../../mock-services/mock-score.service";
 import { MockMatchService } from "./../../mock-services/mock-match.service";
 import { Subscription } from "rxjs";
 import { MockTeamService } from "../../mock-services/mock-team.service";
-import { Team } from "../../mock-services/team.model";
-import { Match } from "../../mock-services/match.model";
+import { Team } from "../../model/team.model";
+import { Match } from "../../model/match.model";
 
 @Component({
     selector: "new-match",

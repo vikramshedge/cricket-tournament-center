@@ -1,4 +1,5 @@
 import { Ball } from "../score/ball/ball";
+import { BallModel } from "./ball.model";
 
 export class Match {
     id: string;
@@ -10,7 +11,7 @@ export class Match {
     summary: string;
     isStarted: boolean;
     isEnded: boolean;
-    balls: Ball[];
+    balls: BallModel[];
     time: string;
     isTeamABatFirst: boolean;
     totalOvers: number;

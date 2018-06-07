@@ -1,11 +1,13 @@
 import { Component, OnInit,OnChanges, AfterViewInit, SimpleChanges, OnDestroy } from "@angular/core";
 import {MockScoreService} from "./../.../../../mock-services/mock-score.service";
-import {Score} from "./../../mock-services/score.model";
+import {Score} from "./../../model/score.model";
 import { MockTeamService } from "../../mock-services/mock-team.service";
-import { Team } from "../../mock-services/team.model";
+import { Team } from "../../model/team.model";
 import { ActivatedRoute, ParamMap } from "@angular/router";
 import { switchMap } from "rxjs/operators";
 import { Subscription } from "rxjs";
+import { BallModel } from "../../model/ball.model";
+import { MockBallService } from "../../mock-services/mock-ball.service";
 
 @Component({
   selector: 'score-board',
@@ -17,8 +19,8 @@ import { Subscription } from "rxjs";
 export class ScoreBoardComponent implements OnInit, OnDestroy {
     teamId: string = "NoName";
 
-    scores: Score[] = [];
-    teams: Team[] = [];
+    // scores: Score[] = [];
+    // teams: Team[] = [];
     scoreId: string = "0";
     score: Score;
     team: Team;
@@ -27,8 +29,13 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
     battingTeam: Team;
     teamSumbscription: Subscription;
     socreSubscription: Subscription;
+    ballSubscription: Subscription;
+    
 
-    constructor(private _scoreSercie: MockScoreService, private _teamService: MockTeamService, private _route: ActivatedRoute){
+    scoreModel: Score = new Score();
+
+    constructor(private _scoreSercie: MockScoreService, private _teamService: MockTeamService,
+        private _ballService: MockBallService, private _route: ActivatedRoute){
         // console.log("score-board.component: constructor: teamId:" + this.teamId + ", scoreId:" + this.scoreId);
     }
 
@@ -42,7 +49,7 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
         try{
             tempInstance.teamSumbscription.unsubscribe();
             tempInstance.socreSubscription.unsubscribe();
-            // tempInstance.scoreSubjectSubscription.unsubscribe();
+            tempInstance.ballSubscription.unsubscribe
         }catch(e){
             //do nothing
         }
@@ -52,29 +59,36 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
             // this.team = this.battingTeam;
         } else {
             this.teamSumbscription = this._teamService.teamSubject.subscribe(data => {
-                tempInstance.teams = tempInstance._teamService.teamsArray;
+                // tempInstance.teams = tempInstance._teamService.teamsArray;
                 tempInstance.initialiseTeam();
             });
 
             this.socreSubscription = this._scoreSercie.scoreSubject.subscribe(data => {
-                tempInstance.scores = tempInstance._scoreSercie.scoresArray;
+                // tempInstance.scores = tempInstance._scoreSercie.scoresArray;
                 tempInstance.initialiseScore();
             });
+
+            this.ballSubscription = this._ballService.ballSubject.subscribe(data => {
+                console.log("Ball subject data:", data);
+                this.calculateScore();
+            })
         }
     }
 
     initialiseScore(): void {
-        for (let i = 0; i < this.scores.length; i++){
-            if (this.scoreId == this.scores[i].id){
-                this.score = this.scores[i];
+        // for (let i = 0; i < this.scores.length; i++){
+        for (let i = 0; i < this._scoreSercie.scoresArray.length; i++){
+            if (this.scoreId == this._scoreSercie.scoresArray[i].id){
+                this.score = this._scoreSercie.scoresArray[i];
+                this.calculateScore();
             }
         }
     }
 
     initialiseTeam(): void {
-        for (let i = 0; i < this.teams.length; i++){
-            if (this.teamId == this.teams[i].id){
-                this.team = this.teams[i];
+        for (let i = 0; i < this._teamService.teamsArray.length; i++){
+            if (this.teamId == this._teamService.teamsArray[i].id){
+                this.team = this._teamService.teamsArray[i];
             }
         }
     }
@@ -115,11 +129,29 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
         } 
     }
 
+    calculateScore(){
+        if (this.score){
+            let balls: string[] = this.score.allBallS;
+            this.scoreModel = new Score();
+            for (let i = 0; i< balls.length; i++){
+                for (let j=0; j<this._ballService.ballsArray.length; j++){
+                    if (balls[i] == this._ballService.ballsArray[j].id){
+                        this.scoreModel.runs += this._ballService.ballsArray[j].runs;
+                        this.scoreModel.wickets += (this._ballService.ballsArray[j].wkt == "out" ? 1 : 0);
+                        this.scoreModel.over = (this._ballService.ballsArray[j].over > this.scoreModel.over ? this._ballService.ballsArray[j].over : this.scoreModel.over)
+                    }
+                }
+            }
+            
+            console.log("calculated runs:"+this.scoreModel);
+        }
+    }
+
     ngOnDestroy(){
         try{
             this.teamSumbscription.unsubscribe();
             this.socreSubscription.unsubscribe();
-            // this.scoreSubjectSubscription.unsubscribe();
+            this.ballSubscription.unsubscribe();
         }catch(e){
             //do nothing
         }

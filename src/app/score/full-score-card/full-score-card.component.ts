@@ -2,11 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MockMatchService } from '../../mock-services/mock-match.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Match } from '../../mock-services/match.model';
+import { Match } from '../../model/match.model';
 import { MockPlayerService } from '../../mock-services/mock-player.service';
-import { Player } from '../../mock-services/player.model';
+import { Player } from '../../model/player.model';
 import { MockTeamService } from '../../mock-services/mock-team.service';
-import { Team } from '../../mock-services/team.model';
+import { Team } from '../../model/team.model';
 
 @Component({
   selector: 'app-full-score-card',

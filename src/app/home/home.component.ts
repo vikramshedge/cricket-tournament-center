@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { MockMatchService } from "./../mock-services/mock-match.service";
-import { Match } from '../mock-services/match.model';
+import { Match } from '../model/match.model';
 import { Router, NavigationEnd, Event, ActivatedRoute, ParamMap } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import { Subscription } from 'rxjs';

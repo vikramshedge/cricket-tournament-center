@@ -3,7 +3,11 @@ export class BallModel {
     ballType: string;
     runs: number;
     wkt: string;
-    batsmanId;
+    wktType: string;
+    onStrickeBatsmanId;
+    nonStrickeBatsmanId;
     bowlerId;
+    over: number;
+    ballNumber: number;
     matchId;
 }

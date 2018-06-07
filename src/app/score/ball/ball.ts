@@ -4,6 +4,7 @@ export class Ball {
 
     ballType: BallProperty;
     wkt: BallProperty;
+    wktType: BallProperty; 
     run: BallProperty;
 
     initiateBall(){
@@ -26,6 +27,11 @@ export class Ball {
             }
         }
         this.run = new BallProperty(tempRunArray, 0);
+
+        this.wktType = new BallProperty([
+            {"text": "RunOut", "value": "Ran out", selected: false, "selectClass": "btn-danger", "unSelectClass": "btn-default"},
+            {"text": "Bowled out", "value": "Bowled out", selected: false, "selectClass": "btn-danger", "unSelectClass": "btn-default"}
+        ],1);
     }
 
     constructor(){
