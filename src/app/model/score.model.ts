@@ -10,4 +10,12 @@ export class Score {
     ballsOfCurrentOver: number;
     over: number;
 
+    constructor(){
+        this.runs = 0;
+        this.wickets = 0;
+        this.balls = 0;
+        this.ballsOfCurrentOver = 0;
+        this.over = 0;
+    }
+
 }

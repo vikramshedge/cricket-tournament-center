@@ -8,11 +8,11 @@
 <div *ngIf="team && score; else noContent">
     <div class="row">
         <div class="col-6"><span>{{team.shortName}}</span></div>
-        <div class="col-6">{{runs + '/' + score.wickets}}</div>
+        <div class="col-6">{{scoreModel.runs + '/' + scoreModel.wickets}}</div>
     </div>
     <div class="row">
         <div class="col-6">Overs:</div>
-        <div class="col-6">{{score.overs + '.' + score.ballsOfCurrentOver}}</div>
+        <div class="col-6">{{scoreModel.overs + '.' + scoreModel.ballsOfCurrentOver}}</div>
     </div>
 </div>
 <ng-template #noContent>

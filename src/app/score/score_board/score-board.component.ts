@@ -143,7 +143,7 @@ export class ScoreBoardComponent implements OnInit, OnDestroy {
                 }
             }
             
-            console.log("calculated runs:"+this.scoreModel);
+            console.log("calculated runs:", this.scoreModel);
         }
     }
 

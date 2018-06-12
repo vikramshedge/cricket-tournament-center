@@ -51,13 +51,14 @@ export class MockBallService {
         return ball;
     }
 
-    addBall(ball: Ball, match: Match, onStrickeBatsman: Player, nonStrickeBatsman: Player, bowler: Player): Promise<string> {
+    addBall(ball: Ball, match: Match, onStrickeBatsman: Player, nonStrickeBatsman: Player, bowler: Player, over: number, ballNumber: number): Promise<string> {
         let tempInstance = this;
         let newBall: BallModel = {
             id: "defaultId", ballType: ball.ballType.selectedElement.value, 
             runs: ball.run.selectedElement.value, wkt: ball.wkt.selectedElement.value,
             wktType: ball.wktType.selectedElement.value, onStrickeBatsmanId: onStrickeBatsman.id,
-            nonStrickeBatsmanId: nonStrickeBatsman.id, bowlerId: bowler.id, matchId: match.id
+            nonStrickeBatsmanId: nonStrickeBatsman.id, bowlerId: bowler.id, matchId: match.id,
+            over: over, ballNumber: ballNumber
         };
         let promise: Promise<string> = new Promise((resolve, reject)=>{
             this.ballCollection.add(newBall).then(value => {

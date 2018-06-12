@@ -176,9 +176,9 @@ export class EditScoreComponent implements OnInit, OnDestroy, AfterViewInit {
         this.addBall(this.battingScore);
         
         let tempInstance = this;
-        this._ballService.addBall(this.currentBall, this.match, this.onStrikeBatsman, this.nonStrikeBatsman, this.bowler).then(data => {
+        this._ballService.addBall(this.currentBall, this.match, this.onStrikeBatsman, this.nonStrikeBatsman, this.bowler, 1, 1.2).then(data => {
             console.log("Ball added with id: ", data);
-            tempInstance.battingScore.allBallS.push(data);            
+            tempInstance.battingScore.allBallS.push(data);
             tempInstance._scoreService.updateScore(tempInstance.battingScore).then(value => {
                 console.log("Score updated");
                 tempInstance.currentBall = new Ball();
